@@ -1,0 +1,81 @@
+{
+  "variables": {
+    "ami_name": "",
+    "aws_access_key": "",
+    "aws_secret_key": "",
+    "source_ami": "",
+    "description": "",
+    "region": "",
+    "subnet_id": "",
+    "vpc_id": ""
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "{{user `region`}}",
+    "source_ami": "{{user `source_ami`}}",
+    "instance_type": "m3.large",
+    "ssh_username": "ubuntu",
+    "ssh_timeout": "5m",
+    "subnet_id": "{{user `subnet_id`}}",
+    "vpc_id": "{{user `vpc_id`}}",
+    "associate_public_ip_address": true,
+    "ami_virtualization_type": "hvm",
+    "ami_description": "{{user `description`}}",
+    "ami_name": "{{user `description`}}",
+    "launch_block_device_mappings": [{
+      "device_name": "/dev/sda1",
+      "volume_size": 20,
+      "volume_type": "gp2",
+      "delete_on_termination": true
+    }],
+    "tags": {
+      "Name": "{{user `ami_name`}}"
+    }
+  }],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "bamboo-agent-config.sh",
+      "destination": "/tmp/bamboo-agent-config.sh"
+    },
+    {
+      "type": "file",
+      "source": "config/rc.local",
+      "destination": "/tmp/rc.local"
+    },
+    {
+      "type": "file",
+      "source": "config/profile.sh",
+      "destination": "/tmp/profile.sh"
+    },
+    {
+      "type": "shell",
+      "start_retry_timeout": "20m",
+      "inline": [
+        "sudo mv /tmp/bamboo-agent-config.sh /usr/local/bin/bamboo-agent-config.sh && sudo chmod u+x /usr/local/bin/bamboo-agent-config.sh",
+        "sudo mv /tmp/rc.local /etc/rc.local && sudo chmod 0755 /etc/rc.local",
+        "sudo mv /tmp/profile.sh /etc/profile.d/bamboo.sh && sudo chmod 0755 /etc/profile.d/bamboo.sh",
+        "sudo rm -rf /var/lib/apt/lists/*",
+        "sudo apt-get clean",
+        "sudo add-apt-repository \"deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse\"",
+        "sudo apt-get update",
+        "sudo apt-get -y upgrade",
+        "sudo apt-get -y install unzip git-core python",
+        "curl -O https://bootstrap.pypa.io/get-pip.py",
+        "sudo -H python get-pip.py",
+        "sudo -H pip install awscli",
+        "wget http://s3.amazonaws.com/ec2-downloads/ec2-api-tools.zip && unzip ec2-api-tools.zip && sudo mv ec2-api-tools-* /opt/ec2-api-tools",
+        "wget --no-cookies --no-check-certificate --header \"Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie\" http://download.oracle.com/otn-pub/java/jdk/8u77-b03/jdk-8u77-linux-x64.tar.gz",
+        "sudo mkdir -p /opt/jdk-8u77 && sudo tar xzvpf jdk-8u77-linux-x64.tar.gz -C /opt/jdk-8u77 --strip 1 && sudo ln -s /opt/jdk-8u77 /opt/jdk-8",
+        "sudo useradd -m bamboo",
+        "sudo chown -R bamboo:bamboo /home/bamboo",
+        "sudo bamboo-agent-config.sh",
+        "sudo cp /opt/bamboo-elastic-agent/etc/motd /etc/motd",
+        "sudo rm -rf /root/firstlogin /home/ubuntu/.ssh/* /etc/ssh/ssh_host_dsa_key /etc/ssh/ssh_host_dsa_key.pub /etc/ssh/ssh_host_key /etc/ssh/ssh_host_key.pub /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_rsa_key.pub /root/.ssh/authorized_keys",
+        "sudo touch /root/firstrun"
+      ]
+    }
+  ]
+}
