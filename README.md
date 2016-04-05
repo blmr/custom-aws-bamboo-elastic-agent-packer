@@ -30,6 +30,8 @@ You can add your own scripts to startup in `config/rc.local`
 
 Guide how to add elastic agent image to your bamboo: [https://confluence.atlassian.com/bamboo/managing-your-elastic-image-configurations-289277147.html](https://confluence.atlassian.com/bamboo/managing-your-elastic-image-configurations-289277147.html)
 
+Tested on Ubuntu 14.04.3 LTS
+
 #License 
 WTFPL v2 
 
