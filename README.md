@@ -29,3 +29,8 @@ Environment variables for a bamboo user can be set in `config/profile.sh`
 You can add your own scripts to startup in `config/rc.local`
 
 Guide how to add elastic agent image to your bamboo: [https://confluence.atlassian.com/bamboo/managing-your-elastic-image-configurations-289277147.html](https://confluence.atlassian.com/bamboo/managing-your-elastic-image-configurations-289277147.html)
+
+#License 
+WTFPL v2 
+
+[http://www.wtfpl.net/about/](http://www.wtfpl.net/about/)
